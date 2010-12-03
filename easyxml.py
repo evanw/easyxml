@@ -53,10 +53,9 @@ class EasyXML:
 
     def __init__(self, name):
         '''
-        Construct a new EasyXML node with a certain name.  Any keyword
-        arguments are set as attributes on the new element.  This should
+        Construct a new EasyXML node with a certain name.  This should
         only be used to create the root node, all child nodes should be
-        created with the attribute syntax in the above example.
+        created with the attribute syntax (see books example above).
         '''
         self._parent = None
         self._name = name
@@ -70,7 +69,7 @@ class EasyXML:
         return that element.  Otherwise, return a new element with the
         given name and this object as a parent.  This does NOT add the
         returned element to this object yet, you still need to call the
-        returned element.
+        returned element to add it.
         '''
         if name.startswith('_'):
             return object.__getattr__(self, name)
@@ -93,6 +92,7 @@ class EasyXML:
           root.a()
           root.a.b.c()
           root.a.b.c()
+          print str(root)
 
         The above code produces the following XML:
 
