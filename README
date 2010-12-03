@@ -1,0 +1,26 @@
+EasyXML is an easy and concise way to generate XML output in Python.  It uses a
+custom attribute getter so element names can be specified directly in the code:
+
+  books = EasyXML('books')
+  books.book(title='Example A')
+  books.book.author(name='John Smith', age=57)
+  books.book.publisher(name='Publisher A')
+  books.book(title='Example B')
+  books.book.author(name='Jane Doe', age=30)
+  books.book.author(name='James Cutter', age=45)
+  books.book.publisher(name='Publisher B')
+  print str(books)
+
+The above code produces the following XML:
+
+  <books>
+    <book title="Example A">
+      <author name="John Smith" age="57"/>
+      <publisher name="Publisher A"/>
+    </book>
+    <book title="Example B">
+      <author name="Jane Doe" age="30"/>
+      <author name="James Cutter" age="45"/>
+      <publisher name="Publisher B"/>
+    </book>
+  </books>
