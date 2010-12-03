@@ -1,30 +1,11 @@
-# EasyXML: An easy way to generate XML output in Python
-# Copyright (c) 2010 Evan Wallace
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-
 import xml.dom.minidom
 import re
 
 class EasyXML:
     '''
-    EasyXML is an easy way to output to XML using Python attribute syntax:
+    EasyXML is an easy and concise way to generate XML output in Python.
+    It uses a custom attribute getter so element names can be specified
+    directly in the code:
 
       books = EasyXML('books')
       books.book(title='Example A')
@@ -40,15 +21,68 @@ class EasyXML:
 
       <books>
         <book title="Example A">
-          <author name="John Smith" age="57"/>
+          <author age="57" name="John Smith"/>
           <publisher name="Publisher A"/>
         </book>
         <book title="Example B">
-          <author name="Jane Doe" age="30"/>
-          <author name="James Cutter" age="45"/>
+          <author age="30" name="Jane Doe"/>
+          <author age="45" name="James Cutter"/>
           <publisher name="Publisher B"/>
         </book>
       </books>
+
+    You don't actually need to create every parent element, allowing the
+    following code to work:
+
+      root = EasyXML('root')
+      root.a.b.c()
+      root.a.b.c()
+      root.a()
+      root.a.b.c()
+      root.a.b.c()
+      print str(root)
+
+    The above code produces the following XML:
+
+      <root>
+        <a>
+          <b>
+            <c/>
+            <c/>
+          </b>
+        </a>
+        <a>
+          <b>
+            <c/>
+            <c/>
+          </b>
+        </a>
+      </root>
+
+    Creating an element returns that element, which can then be passed
+    to helper methods:
+
+      def material(primitive, ambient, diffuse):
+          primitive.ambient(r=ambient[0], g=ambient[1], b=ambient[2])
+          primitive.diffuse(r=diffuse[0], g=diffuse[1], b=diffuse[2])
+
+      root = EasyXML('root')
+      material(root.primitive(type='sphere'), (64, 0, 0), (192, 0, 0))
+      material(root.primitive(type='cube'), (0, 64, 0), (0, 192, 0))
+      print str(root)
+
+    The above code produces the following XML:
+
+      <root>
+        <primitive type="sphere">
+          <ambient b="0" g="0" r="64"/>
+          <diffuse b="0" g="0" r="192"/>
+        </primitive>
+        <primitive type="cube">
+          <ambient b="0" g="64" r="0"/>
+          <diffuse b="0" g="192" r="0"/>
+        </primitive>
+      </root>
     '''
 
     def __init__(self, name):
@@ -83,41 +117,17 @@ class EasyXML:
         '''
         Add a new element with our name to our parent element.  Any keyword
         arguments are set as attributes on the new element.  This actually
-        adds new elements as far up the parent chain as needed, allowing
-        the following code to work:
-
-          root = EasyXML('root')
-          root.a.b.c()
-          root.a.b.c()
-          root.a()
-          root.a.b.c()
-          root.a.b.c()
-          print str(root)
-
-        The above code produces the following XML:
-
-          <root>
-            <a>
-              <b>
-                <c/>
-                <c/>
-              </b>
-            </a>
-            <a>
-              <b>
-                <c/>
-                <c/>
-              </b>
-            </a>
-          </root>
+        adds new elements as far up the parent chain as needed, so you don't
+        need to create every parent explicitly.
         '''
-        e = EasyXML(self._name)
+        e = new_element = EasyXML(self._name)
         e._parent = self._parent
         e._attributes = kwargs
         while e._parent and e not in e._parent._element_map.values():
             e._parent._elements.append(e)
             e._parent._element_map[e._name] = e
             e = e._parent
+        return new_element
 
     def __str__(self):
         '''
